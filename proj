@@ -1,0 +1,80 @@
+instances={
+      "us-east": {
+              "large": 0.12,
+              "xlarge": 0.23,
+              "2xlarge": 0.45,
+              "4xlarge": 0.774,
+              "8xlarge": 1.4,
+              "10xlarge": 2.82
+              },
+      "us-west": {
+              "large": 0.14,
+              "2xlarge": 0.413,
+              "4xlarge": 0.89,
+              "8xlarge": 1.3,
+              "10xlarge": 2.97
+              },
+       }
+server_types={
+      "large": 1,
+      "xlarge": 2,
+      "2xlarge": 4,
+      "4xlarge": 8,
+      "8xlarge": 16,
+      "10xlarge": 32,        
+      }
+result=[]
+def get_costs(instances, hours, cpus, price):
+  if(price == None):
+      get_costs1(instances,hours,cpus)
+  if(cpus == None):
+      get_costs2(instances,hours,price)
+
+def makeResult(region,cost,servers):
+  result_p={}
+  result_p["region"]=region
+  result_p["total_cost"] = '$'+str(cost)
+  result_p["servers"]=servers[::-1]
+  result.append(result_p)
+ 
+def get_costs1(instances,hours,cpus):
+  cpus_copy=cpus
+  for region,server in instances.items():
+      cpus=cpus_copy
+      total_cost=0
+      li1=list(server.keys())
+      li2=list(server.values())     #li1->type li2->cost
+     
+      serverList=[]
+      for i in range(len(li1)-1,-1,-1):
+          if(cpus<=0):
+              break
+          nos_cpus = (cpus//server_types[li1[i]])
+          if(nos_cpus!=0):
+              serverList.append((li1[i],nos_cpus))
+          total_cost+=(nos_cpus*li2[i])
+          cpus%=server_types[li1[i]]
+     
+      makeResult(region,total_cost*hours,serverList)
+ 
+def get_costs2(instances,hours,price):
+  for region,server in instances.items():
+      price1Hour=price/hours
+      total_cost=0
+      li1=list(server.keys())
+      li2=list(server.values())  #li1->type li2->cost
+     
+      serverList=[]
+      for i in range(len(li2)-1,-1,-1):
+          if(price1Hour <= 0):
+              break
+          nos_cpus = (int)(price1Hour//li2[i])
+          if(nos_cpus!=0):
+              serverList.append((li1[i],nos_cpus))
+          total_cost+=(nos_cpus*li2[i])
+          price1Hour%=(li2[i])
+         
+      makeResult(region,total_cost*hours,serverList)
+ 
+get_costs(instances,5,None,50.62)
+print(result)
